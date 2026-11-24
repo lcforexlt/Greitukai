@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SK „Greitukai“ – Projektų ir narių valdymas</title>
+  <style>
+    :root {
+      --bg: #f4f6f9;
+      --surface: #ffffff;
+      --primary: #1e3a8a;
+      --primary-hover: #1d4ed8;
+      --accent: #0f766e;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #dc2626;
+      --success: #16a34a;
+      --radius: 10px;
+      --shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 265px;
+      background: #0f172a;
+      color: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .brand {
+      padding: 20px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .brand h1 { margin: 0; font-size: 1.15rem; }
+    .brand span { font-size: 0.8rem; color: #94a3b8; }
+
+    .nav-group { padding: 12px 10px; }
+    .nav-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 10px;
+      margin-bottom: 6px;
+    }
+    .nav-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #64748b;
+    }
+    .nav-add-btn {
+      background: #1e293b;
+      color: #38bdf8;
+      border: 1px solid #334155;
+      border-radius: 5px;
+      padding: 3px 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .nav-add-btn:hover { background: #334155; color: #fff; }
+
+    .nav-btn {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: none;
+      color: #cbd5e1;
+      padding: 9px 12px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2px;
+      transition: 0.15s;
+    }
+    .nav-btn:hover { background: #1e293b; color: #fff; }
+    .nav-btn.active { background: var(--primary-hover); color: #fff; font-weight: 600; }
+    .badge {
+      font-size: 0.72rem;
+      background: rgba(255,255,255,0.12);
+      padding: 2px 7px;
+      border-radius: 999px;
+    }
+
+    /* Main content */
+    .main {
+      flex: 1;
+      padding: 24px 32px;
+      max-width: 1450px;
+      overflow-x: auto;
+    }
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .topbar h2 { margin: 0; font-size: 1.5rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    button.btn {
+      padding: 8px 14px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    button.btn:hover { background: #f1f5f9; }
+    button.btn-primary {
+      background: var(--primary-hover);
+      color: #fff;
+      border-color: var(--primary-hover);
+    }
+    button.btn-primary:hover { background: var(--primary); }
+    button.btn-save {
+      background: var(--success);
+      color: #fff;
+      border-color: var(--success);
+      font-weight: 600;
+    }
+    button.btn-save:hover { background: #15803d; }
+    button.btn-danger { color: var(--danger); border-color: #fecaca; }
+    button.btn-danger:hover { background: #fef2f2; }
+
+    .save-banner {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.84rem;
+      margin-bottom: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    /* Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(195px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .kpi-card {
+      background: var(--surface);
+      padding: 16px 18px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+    .kpi-title { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+    .kpi-value { font-size: 1.35rem; font-weight: 700; }
+
+    /* Category Breakdown */
+    .cat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+    .cat-pill {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--primary-hover);
+      border-radius: 8px;
+      padding: 12px 14px;
+      box-shadow: var(--shadow);
+    }
+    .cat-pill .name { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+    .cat-pill .val { font-size: 1.15rem; font-weight: 700; margin-top: 4px; }
+
+    /* Table Section */
+    .section-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      margin-bottom: 26px;
+      overflow: hidden;
+    }
+    .section-header {
+      padding: 14px 18px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-header h3 { margin: 0; font-size: 1.05rem; }
+
+    .filter-bar {
+      padding: 12px 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+      background: #fff;
+      align-items: center;
+    }
+    .filter-bar input, .filter-bar select {
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.88rem;
+    }
+    .filter-bar input { min-width: 240px; }
+
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    th, td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: middle;
+    }
+    th {
+      background: #f8fafc;
+      font-weight: 600;
+      color: var(--muted);
+      font-size: 0.79rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    tr:hover td { background: #f8fafc; }
+
+    /* Footer / Budget rows inside table */
+    tfoot tr td {
+      background: #f8fafc;
+      font-weight: 700;
+      border-top: 2px solid #cbd5e1;
+      border-bottom: 1px solid var(--border);
+    }
+    tfoot tr.budget-row td {
+      background: #eff6ff;
+      color: #1e3a8a;
+    }
+    tfoot tr.balance-row td {
+      background: #f1f5f9;
+      font-size: 0.95rem;
+    }
+    .budget-table-input {
+      width: 130px !important;
+      text-align: right;
+      font-weight: 700;
+      font-size: 0.95rem !important;
+      border: 1px solid #93c5fd !important;
+      background: #ffffff !important;
+      color: #1e3a8a !important;
+      padding: 6px 8px !important;
+      border-radius: 6px;
+    }
+
+    td input[type="text"], td input[type="number"], td select {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: transparent;
+      font-size: 0.88rem;
+      color: var(--text);
+      font-family: inherit;
+    }
+    td input:hover, td select:hover { border-color: #cbd5e1; background: #fff; }
+    td input:focus, td select:focus {
+      outline: none;
+      border-color: var(--primary-hover);
+      background: #fff;
+      box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.12);
+    }
+    td select.cat-select {
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      font-weight: 500;
+      min-width: 195px;
+      cursor: pointer;
+    }
+    td.num, th.num { text-align: right; }
+    td input.num-input { text-align: right; font-weight: 600; width: 110px; }
+
+    .del-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    .del-btn:hover { color: var(--danger); background: #fee2e2; }
+
+    .pos { color: var(--success); }
+    .neg { color: var(--danger); }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 440px;
+      padding: 22px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    .modal h3 { margin: 0 0 14px 0; font-size: 1.15rem; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; }
+    .form-group input {
+      width: 100%;
+      padding: 9px 11px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-size: 0.92rem;
+    }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+    .cat-tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .cat-tag {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      padding: 4px 9px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .cat-tag button {
+      border: none;
+      background: none;
+      color: var(--danger);
+      cursor: pointer;
+      font-weight: bold;
+      padding: 0;
+    }
+
+    @media (max-width: 860px) {
+      body { flex-direction: column; }
+      .sidebar { width: 100%; height: auto; position: static; }
+      .main { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <aside class="sidebar">
+    <div class="brand">
+      <h1>SK „Greitukai“</h1>
+      <span>Projektų ir narių apskaita</span>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label" style="padding:4px 10px;">Apžvalga</div>
+      <button class="nav-btn" data-tab="Suvestinė" onclick="switchTab('Suvestinė')">
+        <span>Bendra suvestinė</span>
+        <span class="badge">Visi</span>
+      </button>
+      <button class="nav-btn" data-tab="Nariai" onclick="switchTab('Nariai')">
+        <span>Nariai</span>
+        <span class="badge" id="badge-Nariai">40</span>
+      </button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label-row">
+        <span class="nav-label">Projektų lapai</span>
+        <button class="nav-add-btn" onclick="openNewYearModal()">+ Nauji metai</button>
+      </div>
+      <div id="sheet-nav-list"></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="title-wrap">
+        <h2 id="page-title">Projektai 2026</h2>
+        <button class="btn" id="rename-sheet-btn" style="padding:4px 9px;font-size:0.78rem;" onclick="renameCurrentSheet()">Pervadinti lapą</button>
+        <button class="btn btn-danger" id="delete-sheet-btn" style="padding:4px 9px;font-size:0.78rem;" onclick="deleteCurrentSheet()">Ištrinti lapą</button>
+      </div>
+      <div class="actions">
+        <button class="btn btn-save" onclick="saveSelfContainedHTML()">💾 Išsaugoti failą (.html)</button>
+        <button class="btn btn-primary" id="add-row-btn" onclick="addRowCurrent()">+ Pridėti eilutę</button>
+        <button class="btn" onclick="openCategoryModal()">+ Kategorija</button>
+        <button class="btn" onclick="exportCSV()">Eksportuoti CSV</button>
+      </div>
+    </div>
+
+    <div class="save-banner">
+      <span><strong>Svarbu dėl išsaugojimo:</strong> Pakeitimai automatiškai laikomi naršyklėje, tačiau uždarant failą rekomenduojama paspausti žalią mygtuką <strong>„💾 Išsaugoti failą (.html)“</strong> – atsisiųsite atnaujintą failą su visais naujais įrašais viduje.</span>
+      <span id="save-status" style="font-weight:600;color:#15803d;"></span>
+    </div>
+
+    <div id="content-area"></div>
+  </main>
+
+  <!-- Modal: Nauji metai -->
+  <div class="modal-backdrop" id="modal-year">
+    <div class="modal">
+      <h3>Sukurti naujų metų lentelę (lapą)</h3>
+      <div class="form-group">
+        <label>Lapo pavadinimas (pvz., Projektai 2027)</label>
+        <input type="text" id="new-year-name" placeholder="Projektai 2027" />
+      </div>
+      <div class="form-group">
+        <label>Skirtas biudžetas (€)</label>
+        <input type="number" step="0.01" id="new-year-budget" value="3000" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeModal('modal-year')">Atšaukti</button>
+        <button class="btn btn-primary" onclick="createNewYearSheet()">Sukurti lapą</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Kategorijos -->
+  <div class="modal-backdrop" id="modal-cat">
+    <div class="modal">
+      <h3>Valdyti kategorijas</h3>
+      <div class="form-group">
+        <label>Naujos kategorijos pavadinimas</label>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="new-cat-name" placeholder="Pvz., Kuras arba Apranga" />
+          <button class="btn btn-primary" onclick="addNewCategory()">Pridėti</button>
+        </div>
+      </div>
+      <div style="font-size:0.82rem;color:var(--muted);margin-bottom:6px;">Esamos kategorijos:</div>
+      <div class="cat-tag-list" id="modal-cat-list"></div>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeModal('modal-cat')">Uždaryti</button>
+      </div>
+    </div>
+  </div>
+
+<script id="embedded-data" type="application/json">
+{
+  "categories": [
+    "Nuoma",
+    "LSTA",
+    "Turnyrų reikmenys",
+    "Treniruočių atributika",
+    "Maistpinigiai"
+  ],
+  "members": [
+    {"nr":"0001","narys":"Černeckis Leonas","pareigos":"Prezidentas","mokesciai":"","narys_nuo":"2010-09-10","pratesimas":"","sporto_sakos":"F, K, ST","telefonas":"862761622","adresas":"Kvėdarnos g. 8","miestas":"Rietavas","el_pastas":"skgreitukai@gmail.com","gimimo_data":"1989-06-25","prierasas":""},
+    {"nr":"0002","narys":"Černeckis Andrius","pareigos":"Steigėjas","mokesciai":"","narys_nuo":"2010-09-10","pratesimas":"","sporto_sakos":"F, K, ST, Š","telefonas":"862564333","adresas":"Kvėdarnos g. 8","miestas":"Rietavas","el_pastas":"cerneckis@andrius.lt","gimimo_data":"1985-10-31","prierasas":""},
+    {"nr":"0003","narys":"Stanys Ramūnas","pareigos":"Steigėjas","mokesciai":"","narys_nuo":"2010-09-10","pratesimas":"","sporto_sakos":"F, T","telefonas":"862667847","adresas":"Dariaus ir Girėno g. 10","miestas":"Rietavas","el_pastas":"ramsis333@gmail.com","gimimo_data":"1991-09-16","prierasas":""},
+    {"nr":"0004","narys":"Černeckienė Jūratė","pareigos":"Revizorė","mokesciai":"","narys_nuo":"2010-09-10","pratesimas":"","sporto_sakos":"","telefonas":"866277241","adresas":"Kvėdarnos g. 8","miestas":"Rietavas","el_pastas":"jurachius8@gmail.com","gimimo_data":"1988-01-08","prierasas":""},
+    {"nr":"0005","narys":"Kaulius Edgaras","pareigos":"Narys","mokesciai":70,"narys_nuo":"2010-09-20","pratesimas":"","sporto_sakos":"F","telefonas":"862321088","adresas":"Birutės g. 5","miestas":"Rietavas","el_pastas":"ededgaris@gmail.com","gimimo_data":"1995-08-13","prierasas":""},
+    {"nr":"0006","narys":"Baranauskas Karolis","pareigos":"Narys","mokesciai":70,"narys_nuo":"2010.09.20-2011.09.20","pratesimas":50,"sporto_sakos":"F, ST","telefonas":"860631609","adresas":"","miestas":"Rietavas","el_pastas":"karolaitys10xxx@gmail.com","gimimo_data":"1998-04-30","prierasas":""},
+    {"nr":"0007","narys":"Kružintaitis Ernestas","pareigos":"Narys","mokesciai":70,"narys_nuo":"2010.09.20-2011.09.20","pratesimas":50,"sporto_sakos":"F","telefonas":"862268192","adresas":"Trumpoji g. 5","miestas":"Budrikiai","el_pastas":"erniss@super.lt","gimimo_data":"1996-03-12","prierasas":""},
+    {"nr":"0008","narys":"Macenis Ernestas","pareigos":"Narys","mokesciai":70,"narys_nuo":"2010.09.20-2011.09.20","pratesimas":50,"sporto_sakos":"F, ST, T","telefonas":"869587480","adresas":"Vatušių g. 17","miestas":"Rietavas","el_pastas":"","gimimo_data":"1997-05-03","prierasas":""},
+    {"nr":"0009","narys":"Šniauka Tomas","pareigos":"Narys","mokesciai":70,"narys_nuo":"2010.09.20-2011.11.19","pratesimas":50,"sporto_sakos":"F, T","telefonas":"862762154","adresas":"Vatušių g. 19","miestas":"Rietavas","el_pastas":"kimest@nkm.lt","gimimo_data":"1996-02-13","prierasas":""},
+    {"nr":"0010","narys":"Norvaišas Kęstutis","pareigos":"Narys","mokesciai":70,"narys_nuo":"2010-09-20","pratesimas":"","sporto_sakos":"F","telefonas":"862629657","adresas":"Daržų 8 g.","miestas":"Rietavas","el_pastas":"","gimimo_data":"1992-10-28","prierasas":"Norvaišai"},
+    {"nr":"0011","narys":"Vainorius Lukas","pareigos":"Narys","mokesciai":70,"narys_nuo":"2010.10.01-2011.10.01","pratesimas":50,"sporto_sakos":"F","telefonas":"862355052","adresas":"Žemaičių g. 18","miestas":"Rietavas","el_pastas":"wainorius@one.lt","gimimo_data":"1996-01-16","prierasas":""},
+    {"nr":"0012","narys":"Valančius Aloyzas","pareigos":"Narys","mokesciai":70,"narys_nuo":"2010.10.01-2011.10.01","pratesimas":50,"sporto_sakos":"ST","telefonas":"869205353","adresas":"","miestas":"Budrikiai","el_pastas":"alius647@blog.lt","gimimo_data":"1996-09-13","prierasas":""},
+    {"nr":"0013","narys":"Knyzeris Edgaras","pareigos":"Narys","mokesciai":70,"narys_nuo":"2010.10.01","pratesimas":"","sporto_sakos":"ST","telefonas":"868114452","adresas":"Liepos g. 3","miestas":"Judrėnai","el_pastas":"","gimimo_data":"1993","prierasas":""},
+    {"nr":"0014","narys":"Jatulis Aivaras","pareigos":"Narys","mokesciai":70,"narys_nuo":"2010.10.01-2011.10.01","pratesimas":50,"sporto_sakos":"ST","telefonas":"862396303","adresas":"","miestas":"Rietavas","el_pastas":"aivaras.jatulis@gmail.com","gimimo_data":"1986","prierasas":""},
+    {"nr":"0015","narys":"Mišeikis Gedvydas","pareigos":"Narys","mokesciai":70,"narys_nuo":"2010.09.20-2011.09.20","pratesimas":50,"sporto_sakos":"F, K, ST","telefonas":"868216049","adresas":"Vatušių g. 22 A-6","miestas":"Rietavas","el_pastas":"gedvydas.m@gmail.com","gimimo_data":"1997-12-22","prierasas":""},
+    {"nr":"0016","narys":"Mažeika Eimantas","pareigos":"Narys","mokesciai":70,"narys_nuo":"2010-10-09","pratesimas":"","sporto_sakos":"F","telefonas":"862653074","adresas":"Vatušių g. 22 A","miestas":"Rietavas","el_pastas":"","gimimo_data":"1995-10-21","prierasas":""},
+    {"nr":"0017","narys":"Meižys Deividas","pareigos":"Narys","mokesciai":70,"narys_nuo":"2010-10-07","pratesimas":"","sporto_sakos":"F, ST","telefonas":"861418712","adresas":"Plungės g. 4-4","miestas":"Rietavas","el_pastas":"deivis151@gmail.com","gimimo_data":"1998-04-27","prierasas":""},
+    {"nr":"0018","narys":"Beinusauskaitė Eglė","pareigos":"Narys","mokesciai":70,"narys_nuo":"2010-11-06","pratesimas":"","sporto_sakos":"ST","telefonas":"868266330","adresas":"Kvėdarnos g. 21","miestas":"Rietavas","el_pastas":"","gimimo_data":"1995-10-27","prierasas":""},
+    {"nr":"0020","narys":"Jonušas Paulius","pareigos":"Narys","mokesciai":70,"narys_nuo":"2010-12-04","pratesimas":"","sporto_sakos":"ST","telefonas":"862782975","adresas":"","miestas":"Songailų km.","el_pastas":"jonusutis@blog.lt","gimimo_data":"1994-06-26","prierasas":""},
+    {"nr":"0021","narys":"Jasaitė Marta","pareigos":"Narys","mokesciai":70,"narys_nuo":"2010.12.18-2011.12.18","pratesimas":50,"sporto_sakos":"ST, T","telefonas":"862552989","adresas":"Žemaitės g. 4-35","miestas":"Rietavas","el_pastas":"marta.jasait@gmail.com","gimimo_data":"1998-04-22","prierasas":""},
+    {"nr":"0022","narys":"Andrijauskas Paulius","pareigos":"Narys","mokesciai":70,"narys_nuo":"2011-01-02","pratesimas":"","sporto_sakos":"F, K, ST","telefonas":"865886095","adresas":"Taikos 15 g.","miestas":"Rietavas","el_pastas":"paulius250@one.lt","gimimo_data":"1999-11-11","prierasas":""},
+    {"nr":"0023","narys":"Gedmintas Ignas","pareigos":"Narys","mokesciai":50,"narys_nuo":"2011-01-03","pratesimas":"","sporto_sakos":"F, K","telefonas":"862745459","adresas":"Daržų g. 32-15","miestas":"Rietavas","el_pastas":"ignas.gedmintas@gmail.com","gimimo_data":"1999-05-13","prierasas":""},
+    {"nr":"0024","narys":"Balčiūnas Mykolas","pareigos":"Narys","mokesciai":70,"narys_nuo":"2011.02.20-2012.02.20","pratesimas":50,"sporto_sakos":"F","telefonas":"862568521","adresas":"Jūros g. 4","miestas":"Rietavas","el_pastas":"dowex789@one.lt","gimimo_data":"2001-03-30","prierasas":"Balčiūnai"},
+    {"nr":"0025","narys":"Balčiūnas Dovydas","pareigos":"Narys","mokesciai":"","narys_nuo":"2011.02.21-2012.02.21","pratesimas":"","sporto_sakos":"F","telefonas":"862568521","adresas":"Jūros g. 4","miestas":"Rietavas","el_pastas":"dowex789@one.lt","gimimo_data":"1994-08-02","prierasas":"Balčiūnai"},
+    {"nr":"0026","narys":"Karpavičiūtė Gintarė","pareigos":"Narys","mokesciai":70,"narys_nuo":"2011-02-25","pratesimas":"","sporto_sakos":"ST","telefonas":"862608391","adresas":"Kovo 8-oji g.","miestas":"Tverai","el_pastas":"oziaragyte24@gmail.com","gimimo_data":"1994-12-24","prierasas":""},
+    {"nr":"0027","narys":"Toleikis Vilius","pareigos":"Narys","mokesciai":69,"narys_nuo":"2011-02-26","pratesimas":"","sporto_sakos":"F","telefonas":"862827297","adresas":"","miestas":"Rietavas","el_pastas":"","gimimo_data":"1996-12-10","prierasas":""},
+    {"nr":"0028","narys":"Norvaišas Algimantas","pareigos":"Narys","mokesciai":0,"narys_nuo":"2011-03-06","pratesimas":57,"sporto_sakos":"F","telefonas":"862860294","adresas":"Daržų g. 8","miestas":"Rietavas","el_pastas":"","gimimo_data":"1994-09-06","prierasas":"Norvaišai"},
+    {"nr":"0029","narys":"Mišeikytė Monika","pareigos":"Narys","mokesciai":0,"narys_nuo":"2011-04-06","pratesimas":"","sporto_sakos":"ST","telefonas":"868216049","adresas":"Vatušių 22A-6","miestas":"Rietavas","el_pastas":"","gimimo_data":"2001-04-07","prierasas":"Mišeikiai"},
+    {"nr":"0030","narys":"Pakalniškytė Viktorija","pareigos":"Narys","mokesciai":70,"narys_nuo":"2011-04-07","pratesimas":"","sporto_sakos":"ST","telefonas":"861029052","adresas":"Plungės g. 20-5","miestas":"Rietavas","el_pastas":"","gimimo_data":"2000-11-27","prierasas":""},
+    {"nr":"0031","narys":"Rupšlaukis Denas","pareigos":"Narys","mokesciai":70,"narys_nuo":"2011-05-21","pratesimas":"","sporto_sakos":"LA, F, K","telefonas":"862178516","adresas":"Kvėdarnos g. 10","miestas":"Rietavas","el_pastas":"birutrupslaukiene@gmail.com","gimimo_data":"1999-12-05","prierasas":"869548988 Mama"},
+    {"nr":"0032","narys":"Sausarys Albertas","pareigos":"Narys","mokesciai":70,"narys_nuo":"2011-08-29","pratesimas":"","sporto_sakos":"F,T","telefonas":"862602236","adresas":"Plungės g. 55","miestas":"Rietavas","el_pastas":"albertas2092@gmail.com","gimimo_data":"1994-11-15","prierasas":""},
+    {"nr":"0033","narys":"Stančiukas Vaidotas","pareigos":"Narys","mokesciai":40,"narys_nuo":"2011-09-25","pratesimas":"","sporto_sakos":"F","telefonas":"","adresas":"Jūros g. 4","miestas":"Pelaičiai","el_pastas":"vaidis1999@inbox.lt","gimimo_data":"1999-06-24","prierasas":"Stančiukai"},
+    {"nr":"0034","narys":"Stančiukas Vidmantas","pareigos":"Narys","mokesciai":0,"narys_nuo":"2011-09-25","pratesimas":"","sporto_sakos":"F","telefonas":"866250507","adresas":"Jūros g. 11","miestas":"Pelaičiai","el_pastas":"vidmantas2000@inbox.lt","gimimo_data":"2000-07-10","prierasas":"Stančiukai"},
+    {"nr":"0035","narys":"Lukauskis Aurimas","pareigos":"Narys","mokesciai":0,"narys_nuo":"2011-09-29","pratesimas":"","sporto_sakos":"ST","telefonas":"862281099","adresas":"Paupio g. 6","miestas":"Rietavas","el_pastas":"Cystas@one.lt","gimimo_data":"1996-12-29","prierasas":""},
+    {"nr":"0036","narys":"Lizūnas Simas","pareigos":"Narys","mokesciai":70,"narys_nuo":"2011-10-02","pratesimas":"","sporto_sakos":"F","telefonas":"862261248","adresas":"Vatušių g. 43","miestas":"Rietavas","el_pastas":"","gimimo_data":"1999-01-14","prierasas":"861826773"},
+    {"nr":"0037","narys":"Bertauskaitė Erika","pareigos":"Narys","mokesciai":70,"narys_nuo":"2011-10-22","pratesimas":"","sporto_sakos":"ST","telefonas":"869207733","adresas":"","miestas":"Rietavas","el_pastas":"","gimimo_data":"1992-11-14","prierasas":""},
+    {"nr":"0038","narys":"Pociutė Neringa","pareigos":"Narys","mokesciai":70,"narys_nuo":"2011-11-02","pratesimas":"","sporto_sakos":"ST","telefonas":"862467390","adresas":"Daržų 32 - 1","miestas":"Rietavas","el_pastas":"Neringa44@gmail.com","gimimo_data":"1996-10-07","prierasas":""},
+    {"nr":"0039","narys":"Ringaila Donatas","pareigos":"Narys","mokesciai":70,"narys_nuo":"2011-11-19","pratesimas":"","sporto_sakos":"F","telefonas":"862359413","adresas":"","miestas":"Rietavas","el_pastas":"donataszas@one.lt","gimimo_data":"1998-07-07","prierasas":""},
+    {"nr":"0040","narys":"Radzevičius Vytas","pareigos":"Narys","mokesciai":70,"narys_nuo":"2012-01-29","pratesimas":"","sporto_sakos":"F, ST","telefonas":"868355145","adresas":"Plungės g. 24-2","miestas":"Rietavas","el_pastas":"jolantukas22@gmail.com","gimimo_data":"1998-05-04","prierasas":"860454972 Mama"},
+    {"nr":"0041","narys":"Justas Rimkus","pareigos":"Narys","mokesciai":"","narys_nuo":"2012-03-24","pratesimas":"","sporto_sakos":"F","telefonas":"869592470","adresas":"","miestas":"Rietavas","el_pastas":"rimkus.justas@gmail.com","gimimo_data":"1998-07-29","prierasas":""}
+  ],
+  "sheets": {
+    "Projektai 2026": {
+      "sections": [{
+        "title": "Pagrindinė išlaidų lentelė",
+        "budget": 3000,
+        "items": [
+          {"nr":"1","pardavejas":"VšĮ \"Stalo teniso lyga\"","pavadinimas":"STL Nr. 370","suma":163,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"2","pardavejas":"UAB \"Pongas\"","pavadinimas":"Nr.1008971","suma":139,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"3","pardavejas":"Rietavo Lauryno Ivinskio gimnazija","pavadinimas":"Serija 26 Numeris 20040","suma":114,"kategorija":"Nuoma"},
+          {"nr":"4","pardavejas":"UAB \"Darlandas\"","pavadinimas":"GRA34265","suma":40,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"5","pardavejas":"Rietavo Lauryno Ivinskio gimnazija","pavadinimas":"Serija 26 Numeris 20062","suma":174,"kategorija":"Nuoma"},
+          {"nr":"6","pardavejas":"LSTA","pavadinimas":"Licenzijos","suma":120,"kategorija":"LSTA"},
+          {"nr":"7","pardavejas":"Maistpinigiai","pavadinimas":"Maistpinigių išmok. žiniaraštis nr. SKG 01 2026:01-03/02-14/03-08","suma":180,"kategorija":"Maistpinigiai"},
+          {"nr":"8","pardavejas":"LSTA","pavadinimas":"Serija 2026 Nr. 101","suma":47,"kategorija":"LSTA"},
+          {"nr":"9","pardavejas":"UAB \"Darlandas\"","pavadinimas":"GRA034431","suma":160,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"10","pardavejas":"MB LAZERITA","pavadinimas":"#64546","suma":41.6,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"11","pardavejas":"Rietavo Lauryno Ivinskio gimnazija","pavadinimas":"Serija 26 Numeris 20080","suma":210,"kategorija":"Nuoma"},
+          {"nr":"12","pardavejas":"UAB \"Pongas\"","pavadinimas":"Nr.1009069","suma":145,"kategorija":"Treniruočių atributika"},
+          {"nr":"13","pardavejas":"UAB \"Pongas\"","pavadinimas":"Nr.1009091","suma":212,"kategorija":"Treniruočių atributika"},
+          {"nr":"14","pardavejas":"Rietavo Lauryno Ivinskio gimnazija","pavadinimas":"Numeris 20097","suma":204,"kategorija":"Nuoma"},
+          {"nr":"15","pardavejas":"Rietavo Lauryno Ivinskio gimnazija","pavadinimas":"Numeris 20112","suma":114,"kategorija":"Nuoma"},
+          {"nr":"16","pardavejas":"UAB Darlandas","pavadinimas":"GRA034897","suma":45,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"17","pardavejas":"UAB Darlandas","pavadinimas":"GRA035330","suma":244,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"18","pardavejas":"VšĮ \"Stalo teniso lyga\"","pavadinimas":"Serija STL Nr. 407","suma":205,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"19","pardavejas":"LSTA","pavadinimas":"2026 Nr. 232","suma":400,"kategorija":"LSTA"},
+          {"nr":"20","pardavejas":"LSTA","pavadinimas":"Antanas Savokaitis licenzija","suma":30,"kategorija":"LSTA"},
+          {"nr":"21","pardavejas":"RLIG","pavadinimas":"Serija 26 Numeris 20159","suma":114,"kategorija":"Nuoma"},
+          {"nr":"22","pardavejas":"RLIG","pavadinimas":"Serija 26 Numeris 20177","suma":222,"kategorija":"Nuoma"}
+        ]
+      }]
+    },
+    "Projektai 2025": {
+      "sections": [{
+        "title": "Pagrindinė išlaidų lentelė",
+        "budget": 2730,
+        "items": [
+          {"nr":"1","pardavejas":"Donatas Petrauskas","pavadinimas":"LT464010042502741756 Serija DON Nr. 55","suma":70,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"2","pardavejas":"RLIG","pavadinimas":"Serija 25 Numeris 20008","suma":84,"kategorija":"Nuoma"},
+          {"nr":"3","pardavejas":"LSTA","pavadinimas":"Komandos \"Rėitavs\" 7 žaidėjų licenzijos","suma":140,"kategorija":"LSTA"},
+          {"nr":"4","pardavejas":"RLIG","pavadinimas":"Serija 25 Numeris 20030","suma":132,"kategorija":"Nuoma"},
+          {"nr":"5","pardavejas":"RLIG","pavadinimas":"Serija 25 Numeris 20056","suma":132,"kategorija":"Nuoma"},
+          {"nr":"6","pardavejas":"UAB Darlandas","pavadinimas":"GRA032081","suma":45.95,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"7","pardavejas":"UAB \"Sidabrinis Medis","pavadinimas":"Serija S003 NR. 400017219","suma":304.92,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"8","pardavejas":"RLIG","pavadinimas":"Serija 25 Numeris 20085","suma":174,"kategorija":"Nuoma"},
+          {"nr":"9","pardavejas":"RLIG","pavadinimas":"Serija 25 Numeris 20103","suma":144,"kategorija":"Nuoma"},
+          {"nr":"10","pardavejas":"UAB Darlandas","pavadinimas":"GRA032666","suma":65.9,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"11","pardavejas":"RLIG","pavadinimas":"Serija 25 Numeris 20124","suma":132,"kategorija":"Nuoma"},
+          {"nr":"12","pardavejas":"VšĮ \"Stalo teniso lyga\"","pavadinimas":"Serija STL Nr. 368","suma":117,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"13","pardavejas":"UAB PONGAS","pavadinimas":"Nr.1008539","suma":325,"kategorija":"Treniruočių atributika"},
+          {"nr":"14","pardavejas":"UAB PONGAS","pavadinimas":"Nr.1008661","suma":50,"kategorija":"Treniruočių atributika"},
+          {"nr":"15","pardavejas":"LSTA","pavadinimas":"Lietuvos komandinis čempionatas 2025/2026 (2 lyga - Vyrai) - Startinis mokestis. Rėitavs.","suma":200,"kategorija":"LSTA"},
+          {"nr":"16","pardavejas":"RLIG","pavadinimas":"Serija 25 Numeris 20220","suma":72,"kategorija":"Nuoma"},
+          {"nr":"17","pardavejas":"UAB PONGAS","pavadinimas":"Nr. 1008742","suma":75,"kategorija":"Treniruočių atributika"},
+          {"nr":"18","pardavejas":"UAB PONGAS","pavadinimas":"Nr.1008673","suma":68.5,"kategorija":"Treniruočių atributika"},
+          {"nr":"19","pardavejas":"UAB \"Sidabrinis Medis","pavadinimas":"Serija S003 NR. 400018058","suma":87.12,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"20","pardavejas":"RLIG","pavadinimas":"Serija 25 Numeris 20246","suma":72,"kategorija":"Nuoma"},
+          {"nr":"21","pardavejas":"UAB PONGAS","pavadinimas":"Nr.1008767","suma":40,"kategorija":"Treniruočių atributika"},
+          {"nr":"22","pardavejas":"UAB PONGAS","pavadinimas":"Nr.1008877","suma":30,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"23","pardavejas":"UAB PONGAS","pavadinimas":"Nr.1008727","suma":141,"kategorija":"Treniruočių atributika"},
+          {"nr":"24","pardavejas":"Maistpinigiai","pavadinimas":"4x15x2","suma":120,"kategorija":"Maistpinigiai"}
+        ]
+      }]
+    },
+    "Projektai 2024": {
+      "sections": [{
+        "title": "Pagrindinė išlaidų lentelė",
+        "budget": 2923,
+        "items": [
+          {"nr":"1","pardavejas":"RLIG","pavadinimas":"Serija 24 Numeris 20009","suma":120,"kategorija":"Nuoma"},
+          {"nr":"2","pardavejas":"LSTA","pavadinimas":"2024 Nr. 370","suma":160,"kategorija":"LSTA"},
+          {"nr":"3","pardavejas":"RLIG","pavadinimas":"Serija 24 Numeris 20035","suma":192,"kategorija":"Nuoma"},
+          {"nr":"4","pardavejas":"RLIG","pavadinimas":"Serija 24 Numeris 20064","suma":168,"kategorija":"Nuoma"},
+          {"nr":"5","pardavejas":"UAB Taurės","pavadinimas":"TSS Nr.000004919","suma":32,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"6","pardavejas":"RLIG","pavadinimas":"Serija 24 Numeris 20088","suma":144,"kategorija":"Nuoma"},
+          {"nr":"7","pardavejas":"RLIG","pavadinimas":"Serija 24 Numeris 20112","suma":192,"kategorija":"Nuoma"},
+          {"nr":"8","pardavejas":"RLIG","pavadinimas":"Serija 24 Numeris 20129","suma":72,"kategorija":"Nuoma"},
+          {"nr":"9","pardavejas":"UAB \"Pongas\"","pavadinimas":"Nr.1008014","suma":207,"kategorija":"Treniruočių atributika"},
+          {"nr":"10","pardavejas":"LSTA","pavadinimas":"Nr. 263","suma":350,"kategorija":"LSTA"},
+          {"nr":"11","pardavejas":"UAB \"Pongas\"","pavadinimas":"Nr.1008064","suma":270,"kategorija":"Treniruočių atributika"},
+          {"nr":"12","pardavejas":"RLIG","pavadinimas":"Numeris 20164","suma":168,"kategorija":"Nuoma"},
+          {"nr":"13","pardavejas":"LSTA","pavadinimas":"Greitukai\" IV lygos žaidėjų licenzijos Nr. 341","suma":60,"kategorija":"LSTA"},
+          {"nr":"14","pardavejas":"RLIG","pavadinimas":"Serija 24 Numeris 20190","suma":192,"kategorija":"Nuoma"},
+          {"nr":"15","pardavejas":"RDE.lt","pavadinimas":"MTC Nr.0550712","suma":60.23,"kategorija":"Treniruočių atributika"},
+          {"nr":"16","pardavejas":"RLIG","pavadinimas":"Serija 24 Numeris 20213","suma":192,"kategorija":"Nuoma"},
+          {"nr":"17","pardavejas":"Darlandas","pavadinimas":"","suma":44.5,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"18","pardavejas":"Darlandas","pavadinimas":"GRA031735","suma":180,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"19","pardavejas":"UAB \"Pongas\"","pavadinimas":"Nr.1008246","suma":50,"kategorija":"Treniruočių atributika"},
+          {"nr":"20","pardavejas":"LSTA","pavadinimas":"2024 Nr. 388","suma":43,"kategorija":"LSTA"},
+          {"nr":"21","pardavejas":"EUROBIURAS","pavadinimas":"35061","suma":30.5,"kategorija":"Turnyrų reikmenys"}
+        ]
+      }]
+    },
+    "Projektai 2023": {
+      "sections": [{
+        "title": "Pagrindinė išlaidų lentelė",
+        "budget": 1100,
+        "items": [
+          {"nr":"1","pardavejas":"UAB Pongas","pavadinimas":"1006573","suma":144.6,"kategorija":"Treniruočių atributika"},
+          {"nr":"2","pardavejas":"LSTA","pavadinimas":"2023 Nr. 054","suma":200,"kategorija":"LSTA"},
+          {"nr":"3","pardavejas":"Darlandas","pavadinimas":"GRA027746","suma":43.6,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"4","pardavejas":"RLIG nuoma","pavadinimas":"Serija 23 Numeris 20089","suma":112,"kategorija":"Nuoma"},
+          {"nr":"5","pardavejas":"RLIG nuoma","pavadinimas":"Serija 23 Numeris 20105","suma":128,"kategorija":"Nuoma"},
+          {"nr":"6","pardavejas":"UAB Pongas","pavadinimas":"Užsakymo nr. 6483","suma":22,"kategorija":"Treniruočių atributika"},
+          {"nr":"7","pardavejas":"RLIG nuoma","pavadinimas":"Serija 23 Numeris 20141","suma":48,"kategorija":"Nuoma"},
+          {"nr":"8","pardavejas":"UAB Pongas","pavadinimas":"PON 1006723","suma":52.1,"kategorija":"Treniruočių atributika"},
+          {"nr":"9","pardavejas":"LSTA","pavadinimas":"2023 Nr. 305","suma":350,"kategorija":"LSTA"}
+        ]
+      }]
+    },
+    "Projektai 2022": {
+      "sections": [{
+        "title": "Pagrindinė išlaidų lentelė",
+        "budget": 1320,
+        "items": [
+          {"nr":"1","pardavejas":"Darlandas","pavadinimas":"Nr. GRA026137","suma":50.4,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"2","pardavejas":"RLIG salės nuoma","pavadinimas":"Serija 22 Numeris 20060","suma":256,"kategorija":"Nuoma"},
+          {"nr":"3","pardavejas":"Sidabrinis medis","pavadinimas":"Nr. 400006540","suma":72.2,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"4","pardavejas":"Sidabrinis medis","pavadinimas":"Nr. 400006389","suma":36,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"5","pardavejas":"Sidabrinis medis","pavadinimas":"Nr. 400006032","suma":72,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"6","pardavejas":"LSTA sportininku licencijos","pavadinimas":"","suma":30,"kategorija":"LSTA"},
+          {"nr":"7","pardavejas":"Lietuvos stalo teniso asociacija","pavadinimas":"serija 2022 Nr. 242","suma":500,"kategorija":"LSTA"},
+          {"nr":"8","pardavejas":"RLIG salės nuoma","pavadinimas":"Serija 22 Numeris 20543","suma":64,"kategorija":"Nuoma"},
+          {"nr":"9","pardavejas":"RLIG salės nuoma","pavadinimas":"Serija 22 Numeris 20395","suma":204,"kategorija":"Nuoma"},
+          {"nr":"10","pardavejas":"Darlandas","pavadinimas":"","suma":42.5,"kategorija":"Turnyrų reikmenys"}
+        ]
+      }]
+    },
+    "Projektai 2020": {
+      "sections": [{
+        "title": "Pagrindinė išlaidų lentelė",
+        "budget": 1270,
+        "items": [
+          {"nr":"1","pardavejas":"UAB Darlandas","pavadinimas":"GRA022856","suma":125,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"2","pardavejas":"Varle.lt","pavadinimas":"VARTK9499027","suma":66.89,"kategorija":"Treniruočių atributika"},
+          {"nr":"3","pardavejas":"LSTA","pavadinimas":"Nr. 201","suma":242,"kategorija":"LSTA"},
+          {"nr":"4","pardavejas":"UAB Pongas","pavadinimas":"NR. 17006942","suma":296.12,"kategorija":"Treniruočių atributika"},
+          {"nr":"5","pardavejas":"UAB Pongas","pavadinimas":"Nr. 1005472","suma":477,"kategorija":"Treniruočių atributika"},
+          {"nr":"6","pardavejas":"Kuras","pavadinimas":"","suma":62.99,"kategorija":""}
+        ]
+      }]
+    },
+    "Projektai 2018": {
+      "sections": [{
+        "title": "Pagrindinė išlaidų lentelė",
+        "budget": 1100,
+        "items": [
+          {"nr":"1","pardavejas":"LSTA","pavadinimas":"2018 Nr. 119","suma":93,"kategorija":"LSTA"},
+          {"nr":"2","pardavejas":"LSTA","pavadinimas":"2018 Nr. 053","suma":18,"kategorija":"LSTA"},
+          {"nr":"3","pardavejas":"Vakarų stalo teniso akademija","pavadinimas":"St Nr. 109","suma":12,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"4","pardavejas":"Vakarų stalo teniso akademija","pavadinimas":"ST Nr. 126","suma":209.33,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"5","pardavejas":"IĮ V . Razmienės","pavadinimas":"VRY 0000963","suma":21,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"6","pardavejas":"StalotenisuiLT","pavadinimas":"PAS Nr 6225","suma":33.45,"kategorija":"Treniruočių atributika"},
+          {"nr":"7","pardavejas":"UAB Akimirka","pavadinimas":"AKT000001008","suma":51.81,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"8","pardavejas":"UAB PONGAS","pavadinimas":"1004563","suma":19.4,"kategorija":"Treniruočių atributika"},
+          {"nr":"9","pardavejas":"Andrius Černeckis","pavadinimas":"Kuras","suma":157.88,"kategorija":""},
+          {"nr":"10","pardavejas":"UAB PONGAS","pavadinimas":"Užsakymo nr. 1004733","suma":484.13,"kategorija":"Treniruočių atributika"}
+        ]
+      }]
+    },
+    "Projektai 2017": {
+      "sections": [{
+        "title": "Pagrindinė išlaidų lentelė",
+        "budget": 560,
+        "items": [
+          {"nr":"1","pardavejas":"UAB Tuzas","pavadinimas":"GRI 1764","suma":14.36,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"2","pardavejas":"UAB Darlandas","pavadinimas":"GRA 017648","suma":42.4,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"3","pardavejas":"Žemaitijos lyga","pavadinimas":"","suma":70,"kategorija":"LSTA"},
+          {"nr":"4","pardavejas":"UAB Darlandas","pavadinimas":"GRA 017302","suma":17.3,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"5","pardavejas":"LSTA","pavadinimas":"IV lyga","suma":93,"kategorija":"LSTA"},
+          {"nr":"6","pardavejas":"UAB Pongas","pavadinimas":"PON 100398","suma":82.6,"kategorija":"Treniruočių atributika"},
+          {"nr":"7","pardavejas":"UAB Auremada,","pavadinimas":"AUR Nr. 0008374","suma":25,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"8","pardavejas":"UAB PONGAS","pavadinimas":"Užsakymo nr.3174","suma":25.55,"kategorija":"Treniruočių atributika"},
+          {"nr":"9","pardavejas":"Kuras","pavadinimas":"","suma":189.79,"kategorija":""}
+        ]
+      }]
+    },
+    "Projektai 2016": {
+      "sections": [{
+        "title": "Pagrindinė išlaidų lentelė",
+        "budget": 1000,
+        "items": [
+          {"nr":"1","pardavejas":"Darlandas","pavadinimas":"","suma":30.2,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"2","pardavejas":"Mazoji rakete","pavadinimas":"","suma":40,"kategorija":"Treniruočių atributika"},
+          {"nr":"3","pardavejas":"UAB Kontrus","pavadinimas":"","suma":42.24,"kategorija":""},
+          {"nr":"4","pardavejas":"UAB Tuzas","pavadinimas":"","suma":9.64,"kategorija":""},
+          {"nr":"5","pardavejas":"LSTA","pavadinimas":"","suma":166,"kategorija":"LSTA"},
+          {"nr":"6","pardavejas":"Kuras","pavadinimas":"","suma":225.57,"kategorija":""},
+          {"nr":"7","pardavejas":"Pongas","pavadinimas":"Stalas","suma":400,"kategorija":"Treniruočių atributika"},
+          {"nr":"8","pardavejas":"Pongas","pavadinimas":"kamuoliukai","suma":86.35,"kategorija":"Treniruočių atributika"}
+        ]
+      }]
+    },
+    "Projektai 2015": {
+      "sections": [{
+        "title": "Pagrindinė išlaidų lentelė",
+        "budget": 1300,
+        "items": [
+          {"nr":"1","pardavejas":"UAB Pongas","pavadinimas":"PON Nr. 0002917","suma":51.55,"kategorija":"Treniruočių atributika"},
+          {"nr":"2","pardavejas":"UAB Pongas","pavadinimas":"PON Nr. 0003121","suma":172.03,"kategorija":"Treniruočių atributika"},
+          {"nr":"3","pardavejas":"LSTA","pavadinimas":"Moksetis","suma":171,"kategorija":"LSTA"},
+          {"nr":"4","pardavejas":"Darlandas","pavadinimas":"GRA Nr. 013506","suma":186.2,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"5","pardavejas":"T.Danilevičiaus","pavadinimas":"","suma":115.25,"kategorija":"Treniruočių atributika"},
+          {"nr":"6","pardavejas":"Kuras","pavadinimas":"","suma":294.67,"kategorija":""},
+          {"nr":"7","pardavejas":"UAB Pongas","pavadinimas":"PON Nr.1003297","suma":62.38,"kategorija":"Treniruočių atributika"},
+          {"nr":"8","pardavejas":"UAB Pongas","pavadinimas":"PON Nr.000003331","suma":146.92,"kategorija":"Treniruočių atributika"},
+          {"nr":"9","pardavejas":"UAB Pongas","pavadinimas":"PON Nr.000003342","suma":100,"kategorija":"Treniruočių atributika"}
+        ]
+      }]
+    },
+    "Projektai 2014": {
+      "sections": [{
+        "title": "Pagrindinė išlaidų lentelė",
+        "budget": 4140,
+        "items": [
+          {"nr":"1","pardavejas":"Pongas","pavadinimas":"Nr. 2561","suma":139.42,"kategorija":"Treniruočių atributika"},
+          {"nr":"2","pardavejas":"Pongas","pavadinimas":"Nr. 2638","suma":250,"kategorija":"Treniruočių atributika"},
+          {"nr":"3","pardavejas":"Pongas","pavadinimas":"NR. 2581","suma":150,"kategorija":"Treniruočių atributika"},
+          {"nr":"4","pardavejas":"Pongas","pavadinimas":"Nr. 2473","suma":80,"kategorija":"Treniruočių atributika"},
+          {"nr":"5","pardavejas":"Pongas","pavadinimas":"Nr. 2474","suma":90,"kategorija":"Treniruočių atributika"},
+          {"nr":"6","pardavejas":"LSTA","pavadinimas":"startiniai","suma":690,"kategorija":"LSTA"},
+          {"nr":"7","pardavejas":"pongas","pavadinimas":"1686P","suma":292,"kategorija":"Treniruočių atributika"},
+          {"nr":"8","pardavejas":"pongas","pavadinimas":"1666P","suma":476,"kategorija":"Treniruočių atributika"},
+          {"nr":"9","pardavejas":"pongas","pavadinimas":"1665P","suma":345,"kategorija":"Treniruočių atributika"},
+          {"nr":"10","pardavejas":"UAB Taures","pavadinimas":"Taures","suma":365.67,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"11","pardavejas":"akimirka","pavadinimas":"","suma":137.91,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"12","pardavejas":"Papievio parduotuve","pavadinimas":"Maistas","suma":110.91,"kategorija":"Maistpinigiai"},
+          {"nr":"13","pardavejas":"Kuras","pavadinimas":"Dujos","suma":793.09,"kategorija":""},
+          {"nr":"14","pardavejas":"Žemaitijos pirm.","pavadinimas":"startiniai","suma":220,"kategorija":"LSTA"}
+        ]
+      }]
+    },
+    "Projektai 2013": {
+      "sections": [{
+        "title": "Sporto",
+        "budget": 5400,
+        "items": [
+          {"nr":"1","pardavejas":"Topsas.Lt","pavadinimas":"Kamuoliukai","suma":95,"kategorija":"Treniruočių atributika"},
+          {"nr":"2","pardavejas":"Darlandas","pavadinimas":"Apdovandojimai","suma":173.65,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"3","pardavejas":"Kretingos STSK","pavadinimas":"Mokestis","suma":100,"kategorija":"LSTA"},
+          {"nr":"6","pardavejas":"Akimirka","pavadinimas":"Popierius","suma":84.7,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"7","pardavejas":"Pirštinės","pavadinimas":"Pirštines","suma":109,"kategorija":"Treniruočių atributika"},
+          {"nr":"8","pardavejas":"UAB Sports Mode","pavadinimas":"SELECT","suma":268,"kategorija":"Treniruočių atributika"},
+          {"nr":"9","pardavejas":"Tinklapis","pavadinimas":"SERVERIAI.lt","suma":165.77,"kategorija":""},
+          {"nr":"10","pardavejas":"Topsas.Lt","pavadinimas":"Lenta ir kt.","suma":1231,"kategorija":"Treniruočių atributika"},
+          {"nr":"11","pardavejas":"Darlandas","pavadinimas":"Futbolas","suma":180.4,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"13","pardavejas":"Trevena Leonas","pavadinimas":"Kuras","suma":76.24,"kategorija":""},
+          {"nr":"15","pardavejas":"Trevena Leonas","pavadinimas":"Kuras","suma":78.25,"kategorija":""},
+          {"nr":"18","pardavejas":"TrevenaLeonas","pavadinimas":"Kuras","suma":78.07,"kategorija":""},
+          {"nr":"19","pardavejas":"LSTA","pavadinimas":"Startinis","suma":745,"kategorija":"LSTA"},
+          {"nr":"20","pardavejas":"Trevena Andrius","pavadinimas":"Kuras","suma":66.75,"kategorija":""},
+          {"nr":"21","pardavejas":"Trevena Andrius","pavadinimas":"Kuras","suma":76.41,"kategorija":""},
+          {"nr":"22","pardavejas":"Ventus Nafta Andrius","pavadinimas":"Kuras","suma":62.06,"kategorija":""},
+          {"nr":"24","pardavejas":"Trevena","pavadinimas":"kuras","suma":47.68,"kategorija":""},
+          {"nr":"26","pardavejas":"Trevena","pavadinimas":"kuras","suma":75.97,"kategorija":""},
+          {"nr":"28","pardavejas":"Trevena","pavadinimas":"kuras","suma":82.83,"kategorija":""},
+          {"nr":"29","pardavejas":"Trevena","pavadinimas":"kuras","suma":74.26,"kategorija":""},
+          {"nr":"30","pardavejas":"Trevena0","pavadinimas":"kuras","suma":61.7,"kategorija":""},
+          {"nr":"31","pardavejas":"trevena","pavadinimas":"kuras","suma":75.34,"kategorija":""},
+          {"nr":"32","pardavejas":"trevena","pavadinimas":"kuras","suma":60.45,"kategorija":""},
+          {"nr":"33","pardavejas":"trevena","pavadinimas":"kuras","suma":75.24,"kategorija":""},
+          {"nr":"34","pardavejas":"trevena","pavadinimas":"kuras","suma":78.56,"kategorija":""},
+          {"nr":"35","pardavejas":"Kamuolys sales","pavadinimas":"","suma":109,"kategorija":"Treniruočių atributika"},
+          {"nr":"36","pardavejas":"Darlandas","pavadinimas":"","suma":78.4,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"37","pardavejas":"Papieviene","pavadinimas":"Maistas","suma":94.92,"kategorija":"Maistpinigiai"},
+          {"nr":"39","pardavejas":"Darlandas","pavadinimas":"","suma":140.3,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"40","pardavejas":"FOX","pavadinimas":"","suma":39,"kategorija":""},
+          {"nr":"41","pardavejas":"PHYXIUS","pavadinimas":"","suma":130,"kategorija":""},
+          {"nr":"42","pardavejas":"Select sport","pavadinimas":"aerozolis","suma":60,"kategorija":"Treniruočių atributika"},
+          {"nr":"43","pardavejas":"UAB Pongas","pavadinimas":"","suma":358,"kategorija":"Treniruočių atributika"},
+          {"nr":"44","pardavejas":"UAB Pongas","pavadinimas":"gumos","suma":168.05,"kategorija":"Treniruočių atributika"}
+        ]
+      }]
+    },
+    "Projektai 2012": {
+      "sections": [
+        {
+          "title": "Sporto",
+          "budget": 3970,
+          "items": [
+            {"nr":"1","pardavejas":"UAB \"V.Butkevičius ir kompanija\"","pavadinimas":"1 Ženklinimas(Nr. didelis)","suma":181.5,"kategorija":"Treniruočių atributika"},
+            {"nr":"2","pardavejas":"Rietavo sav. Administracija","pavadinimas":"SB, SA00002104 Į kvėdarną","suma":29.48,"kategorija":""},
+            {"nr":"3","pardavejas":"UAB \"Pongas\"","pavadinimas":"Tinklas ir kamuoliukai","suma":399,"kategorija":"Treniruočių atributika"},
+            {"nr":"4","pardavejas":"Papievienes imone","pavadinimas":"","suma":39.83,"kategorija":"Maistpinigiai"},
+            {"nr":"7","pardavejas":"SportPro","pavadinimas":"Puma pirštinės","suma":57,"kategorija":"Treniruočių atributika"},
+            {"nr":"8","pardavejas":"UAB Darlandas","pavadinimas":"GRA Nr. 007304","suma":244,"kategorija":"Turnyrų reikmenys"},
+            {"nr":"9","pardavejas":"Sportine apranga","pavadinimas":"","suma":243,"kategorija":"Treniruočių atributika"},
+            {"nr":"10","pardavejas":"Darlandas","pavadinimas":"GRA Nr. 007700","suma":130.6,"kategorija":"Turnyrų reikmenys"},
+            {"nr":"11","pardavejas":"Papievienes imone","pavadinimas":"PAP Nr, 1536","suma":40.8,"kategorija":"Maistpinigiai"},
+            {"nr":"14","pardavejas":"UAB \"Interneto vizija\"","pavadinimas":"Serija IV Nr. 457452","suma":160.93,"kategorija":""},
+            {"nr":"15","pardavejas":"Papievienes imone","pavadinimas":"Serija PAP Nr. 1549","suma":10.2,"kategorija":"Maistpinigiai"},
+            {"nr":"16","pardavejas":"pigu.lt","pavadinimas":"Serija PIGU-LT Nr. 342662","suma":614,"kategorija":""},
+            {"nr":"17","pardavejas":"UAB Pongas","pavadinimas":"Tibhar kamuoliai","suma":90,"kategorija":"Treniruočių atributika"},
+            {"nr":"18","pardavejas":"Darlandas","pavadinimas":"GRA Nr. 007874","suma":196.4,"kategorija":"Turnyrų reikmenys"},
+            {"nr":"19","pardavejas":"Akimirka","pavadinimas":"NR. AKI000010552","suma":41.7,"kategorija":"Turnyrų reikmenys"},
+            {"nr":"20","pardavejas":"Kretinogs raj. ST klubas","pavadinimas":"Starto mokestis Žemaitijos regione","suma":40,"kategorija":"LSTA"},
+            {"nr":"21","pardavejas":"LSTA","pavadinimas":"Mokestis uz VI ir VII lygas","suma":435,"kategorija":"LSTA"},
+            {"nr":"23","pardavejas":"Kortus group","pavadinimas":"","suma":64,"kategorija":""},
+            {"nr":"24","pardavejas":"UAB Sidabrinis medis","pavadinimas":"Lengvojo autmobilio keliones lapas","suma":23,"kategorija":""},
+            {"nr":"25","pardavejas":"Darlandas","pavadinimas":"Prizai","suma":144,"kategorija":"Turnyrų reikmenys"},
+            {"nr":"26","pardavejas":"Kuras","pavadinimas":"","suma":785.56,"kategorija":""}
+          ]
+        },
+        {
+          "title": "Pramogos",
+          "budget": 800,
+          "items": [
+            {"nr":"1","pardavejas":"Jaunimo centras","pavadinimas":"Dažasvydis","suma":338.8,"kategorija":""},
+            {"nr":"2","pardavejas":"Žirgynas","pavadinimas":"Jodinėjimas","suma":41.2,"kategorija":""},
+            {"nr":"3","pardavejas":"Baseinas","pavadinimas":"","suma":420,"kategorija":"Nuoma"}
+          ]
+        }
+      ]
+    },
+    "Projektai 2011": {
+      "sections": [
+        {
+          "title": "Sporto",
+          "budget": 3500,
+          "items": [
+            {"nr":"1","pardavejas":"UAB \"Pongas\"","pavadinimas":"Tibharm marškinėliai, 6 vnt","suma":498,"kategorija":"Treniruočių atributika"},
+            {"nr":"2","pardavejas":"UAB \"Darlandas\"","pavadinimas":"Apdovanojimai ST čempionatui","suma":258.5,"kategorija":"Turnyrų reikmenys"},
+            {"nr":"3","pardavejas":"UAB \"Prosport.Lt\"","pavadinimas":"Treniruočių įranga, parašiutas","suma":44,"kategorija":"Treniruočių atributika"},
+            {"nr":"4","pardavejas":"UAB \"Pongas\"","pavadinimas":"DHS kamuoliukai, 144 vnt","suma":80,"kategorija":"Treniruočių atributika"},
+            {"nr":"5","pardavejas":"UAB \"EVASA\"","pavadinimas":"Dekoratyvinis popierius CHABER","suma":20,"kategorija":"Turnyrų reikmenys"},
+            {"nr":"6","pardavejas":"Kretinogs raj. ST klubas","pavadinimas":"Starto mokestis Žemaitijos regione","suma":30,"kategorija":"LSTA"},
+            {"nr":"7","pardavejas":"UAB \"Darlandas\"","pavadinimas":"Apdovanojimai ST čempionatui","suma":20.7,"kategorija":"Turnyrų reikmenys"},
+            {"nr":"8","pardavejas":"UAB \"Vaitra\"","pavadinimas":"Futbolo kamuolys NEMATO.03","suma":194,"kategorija":"Treniruočių atributika"},
+            {"nr":"9","pardavejas":"UAB \"Sportija\"","pavadinimas":"Tempimo - traukimo virvė","suma":130,"kategorija":"Treniruočių atributika"},
+            {"nr":"10","pardavejas":"R. Karengienės IĮ","pavadinimas":"RANTZOW Traukos diržas","suma":36,"kategorija":""},
+            {"nr":"11","pardavejas":"T. Danilevičiaus ds","pavadinimas":"Aprangų marginimas","suma":210,"kategorija":"Treniruočių atributika"},
+            {"nr":"12","pardavejas":"UAB \"Darlandas\"","pavadinimas":"Futbolo turnyro prizai","suma":318,"kategorija":"Turnyrų reikmenys"},
+            {"nr":"13","pardavejas":"LSTA","pavadinimas":"Starto mokestis moterų komanda","suma":275,"kategorija":"LSTA"},
+            {"nr":"14","pardavejas":"LSTA","pavadinimas":"Starto mokestis vyrų komanda","suma":270,"kategorija":"LSTA"},
+            {"nr":"15","pardavejas":"UAB \"Pongas\"","pavadinimas":"Tibhar, Butterfly, Tibhar kamuoliukai","suma":139,"kategorija":"Treniruočių atributika"},
+            {"nr":"16","pardavejas":"Reklamos pasaulis","pavadinimas":"Kepuraitės","suma":162,"kategorija":"Turnyrų reikmenys"},
+            {"nr":"17","pardavejas":"LSTA kelionė","pavadinimas":"Rietavas-Akmenė-Rietavas","suma":86.23,"kategorija":"LSTA"},
+            {"nr":"18","pardavejas":"UAB \"Darlandas\"","pavadinimas":"Apdovanojimai asmeniniam turnyrui","suma":204.5,"kategorija":"Turnyrų reikmenys"},
+            {"nr":"19","pardavejas":"LSTA kelionė","pavadinimas":"Rietavas-Kelmė-Rietavas","suma":59.48,"kategorija":"LSTA"},
+            {"nr":"20","pardavejas":"LSTA kelionė","pavadinimas":"Rietavas-Kaunas-Rietavas","suma":106.14,"kategorija":"LSTA"},
+            {"nr":"21","pardavejas":"TeamSport","pavadinimas":"Skirtukai","suma":168,"kategorija":"Treniruočių atributika"},
+            {"nr":"22","pardavejas":"Darlandas","pavadinimas":"Apdovanojimai","suma":146.5,"kategorija":"Turnyrų reikmenys"},
+            {"nr":"23","pardavejas":"Akimirka","pavadinimas":"Kanceliarinės prekės","suma":43.95,"kategorija":"Turnyrų reikmenys"}
+          ]
+        },
+        {
+          "title": "Jaunimo",
+          "budget": 1000,
+          "items": [
+            {"nr":"1","pardavejas":"UAB \"PROSPORT.LT","pavadinimas":"Kamuoliai (4 vnt)","suma":96,"kategorija":"Treniruočių atributika"},
+            {"nr":"2","pardavejas":"\"Progresas\"","pavadinimas":"Dažasvydis","suma":225,"kategorija":""},
+            {"nr":"3","pardavejas":"Žemaitijos kolegija","pavadinimas":"Baseinas","suma":250,"kategorija":"Nuoma"},
+            {"nr":"4","pardavejas":"Papievis","pavadinimas":"Maistas","suma":89,"kategorija":"Maistpinigiai"},
+            {"nr":"5","pardavejas":"Žemaitijos kolegija","pavadinimas":"Baseinas","suma":240,"kategorija":"Nuoma"},
+            {"nr":"6","pardavejas":"Žirgynas","pavadinimas":"Jodinėjimas","suma":100,"kategorija":""}
+          ]
+        }
+      ]
+    },
+    "Lapas1": {
+      "sections": [{
+        "title": "Pagrindinė išlaidų lentelė",
+        "budget": 900,
+        "items": [
+          {"nr":"1","pardavejas":"Vakarų stalo teniso akademija LT957044060007958790","pavadinimas":"ST Nr. 166","suma":90,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"2","pardavejas":"UAB Darlandas LT047044060002099979","pavadinimas":"GRA020762","suma":94,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"3","pardavejas":"UAB PONGAS LT577300010119201360","pavadinimas":"PON nr. 1004891","suma":46.4,"kategorija":"Treniruočių atributika"},
+          {"nr":"4","pardavejas":"V.Valužio įmonė \"Akimirka\" LT327182000004468108","pavadinimas":"Nr. RKT000000043","suma":72.99,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"5","pardavejas":"Lietuvos stalo teniso asociacija LT477044060007885837","pavadinimas":"Sporto klubo \"Greitukai\" Startinis bei licenzijos","suma":136,"kategorija":"LSTA"},
+          {"nr":"6","pardavejas":"V. Razmienės I.Į. LT314010051003922518","pavadinimas":"Nr. 0000988","suma":31.2,"kategorija":"Turnyrų reikmenys"},
+          {"nr":"7","pardavejas":"UAB PONGAS LT577300010119201360","pavadinimas":"Užsakymo nr. 1004920","suma":366.8,"kategorija":"Treniruočių atributika"},
+          {"nr":"8","pardavejas":"VŠĮ Šiaulių stalo tenisas","pavadinimas":"","suma":62.61,"kategorija":"Turnyrų reikmenys"}
+        ]
+      }]
+    }
+  }
+}
+</script>
+
+<script>
+const STORAGE_KEY = "greitukai_app_state_v2";
+const EMBEDDED_STATE = JSON.parse(document.getElementById("embedded-data").textContent);
+
+let appState = loadState();
+let activeTab = Object.keys(appState.sheets)[0] || "Projektai 2026";
+let searchFilter = "";
+let categoryFilter = "ALL";
+let hasUnsavedFileChanges = false;
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed && parsed.sheets && parsed.categories) {
+        return parsed;
+      }
+    }
+  } catch (e) {}
+  return JSON.parse(JSON.stringify(EMBEDDED_STATE));
+}
+
+function saveState() {
+  hasUnsavedFileChanges = true;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+  } catch (e) {}
+  const statusEl = document.getElementById("save-status");
+  if (statusEl) {
+    statusEl.textContent = "● Yra neišsaugotų pakeitimų faile";
+    statusEl.style.color = "#d97706";
+  }
+  updateSidebarBadges();
+}
+
+// Įrašo visą būseną į patį HTML failą ir jį atsisiunčia
+function saveSelfContainedHTML() {
+  const docClone = document.documentElement.cloneNode(true);
+  const dataScript = docClone.querySelector("#embedded-data");
+  dataScript.textContent = "\n" + JSON.stringify(appState, null, 2) + "\n";
+
+  // Išvalome dinamiškai sugeneruotą turinį prieš išsaugant švarų šabloną
+  const contentArea = docClone.querySelector("#content-area");
+  if (contentArea) contentArea.innerHTML = "";
+  const navList = docClone.querySelector("#sheet-nav-list");
+  if (navList) navList.innerHTML = "";
+  const statusEl = docClone.querySelector("#save-status");
+  if (statusEl) statusEl.textContent = "";
+
+  const fullHtml = "<!DOCTYPE html>\n" + docClone.outerHTML;
+  const blob = new Blob([fullHtml], { type: "text/html;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "greitukai_valdymas.html";
+  a.click();
+
+  hasUnsavedFileChanges = false;
+  const liveStatus = document.getElementById("save-status");
+  if (liveStatus) {
+    liveStatus.textContent = "✓ Failas išsaugotas!";
+    liveStatus.style.color = "#15803d";
+  }
+}
+
+window.addEventListener("beforeunload", function (e) {
+  if (hasUnsavedFileChanges) {
+    e.preventDefault();
+    e.returnValue = "";
+  }
+});
+
+function fmt(num) {
+  const n = Number(num) || 0;
+  return n.toLocaleString("lt-LT", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+}
+
+function esc(str) {
+  return String(str ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function buildSidebar() {
+  const container = document.getElementById("sheet-nav-list");
+  container.innerHTML = "";
+  Object.keys(appState.sheets).forEach(sheetName => {
+    const btn = document.createElement("button");
+    btn.className = "nav-btn";
+    btn.dataset.tab = sheetName;
+    btn.onclick = () => switchTab(sheetName);
+    const count = appState.sheets[sheetName].sections.reduce((acc, s) => acc + s.items.length, 0);
+    btn.innerHTML = `<span>${esc(sheetName)}</span><span class="badge" id="badge-${esc(sheetName)}">${count}</span>`;
+    container.appendChild(btn);
+  });
+  updateSidebarBadges();
+}
+
+function updateSidebarBadges() {
+  const nb = document.getElementById("badge-Nariai");
+  if (nb) nb.textContent = appState.members.length;
+  Object.keys(appState.sheets).forEach(sheetName => {
+    const b = document.getElementById("badge-" + sheetName);
+    if (b) {
+      b.textContent = appState.sheets[sheetName].sections.reduce((acc, s) => acc + s.items.length, 0);
+    }
+  });
+}
+
+function switchTab(tab) {
+  activeTab = tab;
+  searchFilter = "";
+  categoryFilter = "ALL";
+  document.querySelectorAll(".nav-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.tab === tab);
+  });
+  document.getElementById("page-title").textContent = tab;
+
+  const isSheet = Boolean(appState.sheets[tab]);
+  document.getElementById("add-row-btn").style.display = tab === "Suvestinė" ? "none" : "inline-block";
+  document.getElementById("rename-sheet-btn").style.display = isSheet ? "inline-block" : "none";
+  document.getElementById("delete-sheet-btn").style.display = isSheet ? "inline-block" : "none";
+  render();
+}
+
+function render() {
+  const area = document.getElementById("content-area");
+  if (activeTab === "Suvestinė") {
+    renderSummary(area);
+  } else if (activeTab === "Nariai") {
+    renderMembers(area);
+  } else if (appState.sheets[activeTab]) {
+    renderExpenseSheet(area, activeTab);
+  }
+}
+
+function renderSummary(area) {
+  let totalBudget = 0;
+  let totalSpent = 0;
+  const catTotals = {};
+  appState.categories.forEach(c => catTotals[c] = 0);
+  catTotals["Nepriskirta"] = 0;
+
+  const rowsHtml = [];
+
+  Object.entries(appState.sheets).forEach(([sheetName, sheetObj]) => {
+    let sBudget = 0;
+    let sSpent = 0;
+    sheetObj.sections.forEach(sec => {
+      sBudget += Number(sec.budget) || 0;
+      sec.items.forEach(item => {
+        const val = Number(item.suma) || 0;
+        sSpent += val;
+        const c = appState.categories.includes(item.kategorija) ? item.kategorija : "Nepriskirta";
+        catTotals[c] = (catTotals[c] || 0) + val;
+      });
+    });
+    totalBudget += sBudget;
+    totalSpent += sSpent;
+    const diff = sBudget - sSpent;
+    rowsHtml.push(`
+      <tr>
+        <td><strong><a href="#" onclick="switchTab('${esc(sheetName)}');return false;" style="color:var(--primary-hover);text-decoration:none;">${esc(sheetName)}</a></strong></td>
+        <td class="num">${fmt(sBudget)}</td>
+        <td class="num">${fmt(sSpent)}</td>
+        <td class="num ${diff >= 0 ? 'pos' : 'neg'}"><strong>${fmt(diff)}</strong></td>
+      </tr>
+    `);
+  });
+
+  const catCardsHtml = Object.entries(catTotals).map(([name, val]) => `
+    <div class="cat-pill"><div class="name">${esc(name)}</div><div class="val">${fmt(val)}</div></div>
+  `).join("");
+
+  area.innerHTML = `
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-title">Visų projektų biudžetas</div>
+        <div class="kpi-value">${fmt(totalBudget)}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Viso išleista</div>
+        <div class="kpi-value">${fmt(totalSpent)}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Bendras likutis</div>
+        <div class="kpi-value ${totalBudget - totalSpent >= 0 ? 'pos' : 'neg'}">${fmt(totalBudget - totalSpent)}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Klubo narių sąraše</div>
+        <div class="kpi-value">${appState.members.length}</div>
+      </div>
+    </div>
+
+    <div class="cat-grid">${catCardsHtml}</div>
+
+    <div class="section-card">
+      <div class="section-header"><h3>Projektų suvestinė pagal metus</h3></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Lapas / Projektas</th>
+              <th class="num">Skirtas biudžetas</th>
+              <th class="num">Išleista</th>
+              <th class="num">Likutis</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml.join("")}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function renderExpenseSheet(area, sheetName) {
+  const sheetObj = appState.sheets[sheetName];
+  let totalBudget = 0;
+  let totalSpent = 0;
+  const catTotals = {};
+  appState.categories.forEach(c => catTotals[c] = 0);
+  catTotals["Nepriskirta"] = 0;
+
+  sheetObj.sections.forEach(sec => {
+    totalBudget += Number(sec.budget) || 0;
+    sec.items.forEach(item => {
+      const val = Number(item.suma) || 0;
+      totalSpent += val;
+      const c = appState.categories.includes(item.kategorija) ? item.kategorija : "Nepriskirta";
+      catTotals[c] = (catTotals[c] || 0) + val;
+    });
+  });
+
+  const balance = totalBudget - totalSpent;
+  const catCardsHtml = Object.entries(catTotals).map(([name, val]) => `
+    <div class="cat-pill"><div class="name">${esc(name)}</div><div class="val">${fmt(val)}</div></div>
+  `).join("");
+
+  area.innerHTML = `
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-title">Skirta lėšų (Biudžetas)</div>
+        <div class="kpi-value">${fmt(totalBudget)}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Išleista viso</div>
+        <div class="kpi-value">${fmt(totalSpent)}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Likutis</div>
+        <div class="kpi-value ${balance >= 0 ? 'pos' : 'neg'}">${fmt(balance)}</div>
+      </div>
+    </div>
+
+    <div class="cat-grid">${catCardsHtml}</div>
+
+    <div class="section-card" style="margin-bottom:18px;">
+      <div class="filter-bar">
+        <input type="text" placeholder="Ieškoti pagal pardavėją arba pavadinimą..." value="${esc(searchFilter)}" oninput="searchFilter=this.value;renderTablesOnly('${esc(sheetName)}')" />
+        <select onchange="categoryFilter=this.value;renderTablesOnly('${esc(sheetName)}')">
+          <option value="ALL" ${categoryFilter === "ALL" ? "selected" : ""}>Visos kategorijos</option>
+          ${appState.categories.map(c => `<option value="${esc(c)}" ${categoryFilter === c ? "selected" : ""}>${esc(c)}</option>`).join("")}
+          <option value="UNASSIGNED" ${categoryFilter === "UNASSIGNED" ? "selected" : ""}>Be kategorijos</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="sections-container"></div>
+  `;
+
+  renderTablesOnly(sheetName);
+}
+
+function renderTablesOnly(sheetName) {
+  const sheetObj = appState.sheets[sheetName];
+  const container = document.getElementById("sections-container");
+  const q = searchFilter.toLowerCase().trim();
+
+  container.innerHTML = sheetObj.sections.map((sec, sIdx) => {
+    const secSpent = sec.items.reduce((sum, it) => sum + (Number(it.suma) || 0), 0);
+    const secBudget = Number(sec.budget) || 0;
+    const secBal = secBudget - secSpent;
+
+    const filtered = sec.items
+      .map((item, iIdx) => ({ item, iIdx }))
+      .filter(({ item }) => {
+        if (categoryFilter === "UNASSIGNED" && item.kategorija) return false;
+        if (categoryFilter !== "ALL" && categoryFilter !== "UNASSIGNED" && item.kategorija !== categoryFilter) return false;
+        if (q) {
+          const hay = `${item.pardavejas} ${item.pavadinimas} ${item.nr}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+
+    const rows = filtered.map(({ item, iIdx }) => `
+      <tr>
+        <td style="width:65px;"><input type="text" value="${esc(item.nr)}" onchange="updateItem('${esc(sheetName)}',${sIdx},${iIdx},'nr',this.value)" /></td>
+        <td><input type="text" value="${esc(item.pardavejas)}" onchange="updateItem('${esc(sheetName)}',${sIdx},${iIdx},'pardavejas',this.value)" /></td>
+        <td><input type="text" value="${esc(item.pavadinimas)}" onchange="updateItem('${esc(sheetName)}',${sIdx},${iIdx},'pavadinimas',this.value)" /></td>
+        <td style="width:225px;">
+          <select class="cat-select" onchange="updateItem('${esc(sheetName)}',${sIdx},${iIdx},'kategorija',this.value)">
+            <option value="" ${!item.kategorija ? "selected" : ""}>-- Pasirinkti kategoriją --</option>
+            ${appState.categories.map(c => `<option value="${esc(c)}" ${item.kategorija === c ? "selected" : ""}>${esc(c)}</option>`).join("")}
+          </select>
+        </td>
+        <td class="num" style="width:130px;"><input class="num-input" type="number" step="0.01" value="${item.suma}" onchange="updateItem('${esc(sheetName)}',${sIdx},${iIdx},'suma',parseFloat(this.value)||0)" /></td>
+        <td style="width:45px;text-align:center;"><button class="del-btn" title="Ištrinti" onclick="deleteItem('${esc(sheetName)}',${sIdx},${iIdx})">✕</button></td>
+      </tr>
+    `).join("");
+
+    return `
+      <div class="section-card">
+        <div class="section-header">
+          <h3>${esc(sec.title)}</h3>
+          <button class="btn btn-primary" style="padding:5px 11px;font-size:0.82rem;" onclick="addItemToSection('${esc(sheetName)}',${sIdx})">+ Pridėti išlaidą</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nr</th>
+                <th>Pardavėjas</th>
+                <th>Pavadinimas / Dok. Nr.</th>
+                <th>Kategorija</th>
+                <th class="num">Suma (€)</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>${rows || `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:18px;">Įrašų nerasta</td></tr>`}</tbody>
+            <tfoot>
+              <tr>
+                <td colspan="4" style="text-align:right;">Išleista viso:</td>
+                <td class="num">${fmt(secSpent)}</td>
+                <td></td>
+              </tr>
+              <tr class="budget-row">
+                <td colspan="4" style="text-align:right;">Skirtas biudžetas (galite keisti):</td>
+                <td class="num">
+                  <input class="budget-table-input" type="number" step="0.01" value="${secBudget}" onchange="updateBudget('${esc(sheetName)}',${sIdx},parseFloat(this.value)||0)" />
+                </td>
+                <td></td>
+              </tr>
+              <tr class="balance-row">
+                <td colspan="4" style="text-align:right;">Likutis:</td>
+                <td class="num ${secBal >= 0 ? 'pos' : 'neg'}">${fmt(secBal)}</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function updateItem(sheetName, sIdx, iIdx, field, value) {
+  appState.sheets[sheetName].sections[sIdx].items[iIdx][field] = value;
+  saveState();
+  renderExpenseSheet(document.getElementById("content-area"), sheetName);
+}
+
+function updateBudget(sheetName, sIdx, val) {
+  appState.sheets[sheetName].sections[sIdx].budget = val;
+  saveState();
+  renderExpenseSheet(document.getElementById("content-area"), sheetName);
+}
+
+function deleteItem(sheetName, sIdx, iIdx) {
+  if (!confirm("Ar tikrai ištrinti šią išlaidų eilutę?")) return;
+  appState.sheets[sheetName].sections[sIdx].items.splice(iIdx, 1);
+  saveState();
+  renderExpenseSheet(document.getElementById("content-area"), sheetName);
+}
+
+function addItemToSection(sheetName, sIdx) {
+  const items = appState.sheets[sheetName].sections[sIdx].items;
+  items.push({
+    nr: String(items.length + 1),
+    pardavejas: "",
+    pavadinimas: "",
+    suma: 0,
+    kategorija: ""
+  });
+  saveState();
+  renderExpenseSheet(document.getElementById("content-area"), sheetName);
+}
+
+function addRowCurrent() {
+  if (activeTab === "Nariai") {
+    const nextNr = String(appState.members.length + 1).padStart(4, "0");
+    appState.members.push({
+      nr: nextNr, narys: "", pareigos: "Narys", mokesciai: "", narys_nuo: "",
+      pratesimas: "", sporto_sakos: "", telefonas: "", adresas: "", miestas: "Rietavas",
+      el_pastas: "", gimimo_data: "", prierasas: ""
+    });
+    saveState();
+    render();
+  } else if (appState.sheets[activeTab]) {
+    addItemToSection(activeTab, 0);
+  }
+}
+
+/* Naujų metų / lapo valdymas */
+function openNewYearModal() {
+  const nextYear = new Date().getFullYear() + 1;
+  document.getElementById("new-year-name").value = "Projektai " + nextYear;
+  document.getElementById("modal-year").classList.add("open");
+}
+
+function createNewYearSheet() {
+  const name = document.getElementById("new-year-name").value.trim();
+  const budget = parseFloat(document.getElementById("new-year-budget").value) || 0;
+  if (!name) {
+    alert("Įveskite lapo pavadinimą.");
+    return;
+  }
+  if (appState.sheets[name]) {
+    alert("Toks lapas jau egzistuoja!");
+    return;
+  }
+  // Įterpiame naują lapą į sąrašo viršų
+  const newSheets = {};
+  newSheets[name] = {
+    sections: [{
+      title: "Pagrindinė išlaidų lentelė",
+      budget: budget,
+      items: [
+        { nr: "1", pardavejas: "", pavadinimas: "", suma: 0, kategorija: "" }
+      ]
+    }]
+  };
+  Object.assign(newSheets, appState.sheets);
+  appState.sheets = newSheets;
+
+  saveState();
+  closeModal("modal-year");
+  buildSidebar();
+  switchTab(name);
+}
+
+function renameCurrentSheet() {
+  if (!appState.sheets[activeTab]) return;
+  const newName = prompt("Įveskite naują lapo pavadinimą:", activeTab);
+  if (!newName || newName.trim() === "" || newName.trim() === activeTab) return;
+  const trimmed = newName.trim();
+  if (appState.sheets[trimmed]) {
+    alert("Lapas tokiu pavadinimu jau yra.");
+    return;
+  }
+  const updatedSheets = {};
+  Object.entries(appState.sheets).forEach(([k, v]) => {
+    updatedSheets[k === activeTab ? trimmed : k] = v;
+  });
+  appState.sheets = updatedSheets;
+  saveState();
+  buildSidebar();
+  switchTab(trimmed);
+}
+
+function deleteCurrentSheet() {
+  if (!appState.sheets[activeTab]) return;
+  if (Object.keys(appState.sheets).length <= 1) {
+    alert("Negalima ištrinti paskutinio lapo.");
+    return;
+  }
+  if (!confirm(`Ar tikrai norite ištrinti visą lapą „${activeTab}“?`)) return;
+  delete appState.sheets[activeTab];
+  saveState();
+  buildSidebar();
+  switchTab(Object.keys(appState.sheets)[0]);
+}
+
+/* Kategorijų valdymas */
+function openCategoryModal() {
+  renderCategoryModalList();
+  document.getElementById("modal-cat").classList.add("open");
+}
+
+function renderCategoryModalList() {
+  const list = document.getElementById("modal-cat-list");
+  list.innerHTML = appState.categories.map((cat, idx) => `
+    <span class="cat-tag">
+      ${esc(cat)}
+      <button title="Pašalinti kategoriją" onclick="removeCategory(${idx})">✕</button>
+    </span>
+  `).join("");
+}
+
+function addNewCategory() {
+  const input = document.getElementById("new-cat-name");
+  const val = input.value.trim();
+  if (!val) return;
+  if (appState.categories.includes(val)) {
+    alert("Tokia kategorija jau yra.");
+    return;
+  }
+  appState.categories.push(val);
+  input.value = "";
+  saveState();
+  renderCategoryModalList();
+  render();
+}
+
+function removeCategory(idx) {
+  const catName = appState.categories[idx];
+  if (!confirm(`Pašalinti kategoriją „${catName}“ iš sąrašo?`)) return;
+  appState.categories.splice(idx, 1);
+  saveState();
+  renderCategoryModalList();
+  render();
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove("open");
+}
+
+/* Nariai */
+function renderMembers(area) {
+  const q = searchFilter.toLowerCase().trim();
+  const filtered = appState.members
+    .map((m, idx) => ({ m, idx }))
+    .filter(({ m }) => {
+      if (!q) return true;
+      return Object.values(m).join(" ").toLowerCase().includes(q);
+    });
+
+  const rows = filtered.map(({ m, idx }) => `
+    <tr>
+      <td style="width:70px;"><input type="text" value="${esc(m.nr)}" onchange="updateMember(${idx},'nr',this.value)" /></td>
+      <td><input type="text" value="${esc(m.narys)}" onchange="updateMember(${idx},'narys',this.value)" /></td>
+      <td><input type="text" value="${esc(m.pareigos)}" onchange="updateMember(${idx},'pareigos',this.value)" /></td>
+      <td style="width:85px;"><input type="text" value="${esc(m.mokesciai)}" onchange="updateMember(${idx},'mokesciai',this.value)" /></td>
+      <td><input type="text" value="${esc(m.narys_nuo)}" onchange="updateMember(${idx},'narys_nuo',this.value)" /></td>
+      <td><input type="text" value="${esc(m.sporto_sakos)}" onchange="updateMember(${idx},'sporto_sakos',this.value)" /></td>
+      <td><input type="text" value="${esc(m.telefonas)}" onchange="updateMember(${idx},'telefonas',this.value)" /></td>
+      <td><input type="text" value="${esc(m.miestas)}" onchange="updateMember(${idx},'miestas',this.value)" /></td>
+      <td><input type="text" value="${esc(m.el_pastas)}" onchange="updateMember(${idx},'el_pastas',this.value)" /></td>
+      <td><input type="text" value="${esc(m.prierasas)}" onchange="updateMember(${idx},'prierasas',this.value)" /></td>
+      <td><button class="del-btn" onclick="deleteMember(${idx})">✕</button></td>
+    </tr>
+  `).join("");
+
+  area.innerHTML = `
+    <div class="section-card">
+      <div class="filter-bar">
+        <input type="text" placeholder="Ieškoti nario pagal vardą, miestą, telefoną..." value="${esc(searchFilter)}" oninput="searchFilter=this.value;renderMembers(document.getElementById('content-area'))" />
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Nr.</th>
+              <th>Narys</th>
+              <th>Pareigos</th>
+              <th>Mokesčiai</th>
+              <th>Narys nuo</th>
+              <th>Sporto šakos</th>
+              <th>Telefonas</th>
+              <th>Miestas</th>
+              <th>El. Paštas</th>
+              <th>Prierašas</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function updateMember(idx, field, val) {
+  appState.members[idx][field] = val;
+  saveState();
+}
+
+function deleteMember(idx) {
+  if (!confirm("Ar tikrai ištrinti narį?")) return;
+  appState.members.splice(idx, 1);
+  saveState();
+  render();
+}
+
+function exportCSV() {
+  let csv = "\uFEFFLapas;Skyrius;Nr;Pardavėjas;Pavadinimas;Kategorija;Suma;Biudžetas\n";
+  Object.entries(appState.sheets).forEach(([sheetName, sheetObj]) => {
+    sheetObj.sections.forEach(sec => {
+      sec.items.forEach(it => {
+        const row = [sheetName, sec.title, it.nr, it.pardavejas, it.pavadinimas, it.kategorija, String(it.suma).replace(".", ","), String(sec.budget).replace(".", ",")]
+          .map(v => `"${String(v ?? "").replace(/"/g, '""')}"`).join(";");
+        csv += row + "\n";
+      });
+    });
+  });
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "greitukai_islaidos_su_kategorijomis.csv";
+  a.click();
+}
+
+buildSidebar();
+switchTab(activeTab);
+</script>
+</body>
+</html>
